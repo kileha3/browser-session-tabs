@@ -110,7 +110,7 @@ describe('BrowserTabTracker', () => {
         expect(callback).toHaveBeenCalled();
         expect(callback).toHaveBeenCalledWith(
           'my-new-session-id', // session id
-          '1' // tab id
+          1 // tab id
         );
       });
 
@@ -174,7 +174,7 @@ describe('BrowserTabTracker', () => {
 
     it('should return a new tab id starting at 1 if there is not session storage', () => {
       service.initialize({ sessionIdGenerator });
-      expect(service.tabId).toEqual('1');
+      expect(service.tabId).toEqual(1);
     });
 
     it('should return tab id stored in session storage', () => {
@@ -186,7 +186,7 @@ describe('BrowserTabTracker', () => {
       service.initialize({ sessionIdGenerator });
 
       // same as already in session storage
-      expect(service.tabId).toEqual('4');
+      expect(service.tabId).toEqual(4);
 
       // taken from session storage
       expect(storageService.sessionStorageGet).toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe('BrowserTabTracker', () => {
       service.initialize({ sessionIdGenerator });
 
       // incremented tab id from previous tab
-      expect(service.tabId).toEqual('9');
+      expect(service.tabId).toEqual(9);
 
       // session storage is checked
       expect(storageService.sessionStorageGet).toHaveBeenCalled();
