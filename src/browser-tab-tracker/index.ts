@@ -13,7 +13,9 @@ export interface SessionInfo<T> {
 
 export type SessionIdGenerator<T> = () => T;
 
-export type SessionStartedCallback<T> = (sessionId: T, tabId: string) => void;
+export type SessionStartedCallback<T> = (sessionId: T, tabId: number) => void;
+
+export type NewTabOpenedCallback<T> = (tabId: number) => void;
 
 export class BrowserTabTracker<T> {
   private storageKeyName: string = DEFAULT_STORAGE_KEY;
@@ -24,6 +26,8 @@ export class BrowserTabTracker<T> {
 
   private sessionStartedCallback?: SessionStartedCallback<T> = null as any;
 
+  private newTabOpenedCallback?: NewTabOpenedCallback<T> = null as any;
+
   private newSessionCreated = false;
 
   constructor(private storageService: StorageService) {}
@@ -31,10 +35,10 @@ export class BrowserTabTracker<T> {
   /**
    * The current tab ID.
    * The tab ID starts from 1, and increments for every tab opened in the session.
-   * @returns a number as a string
+   * @returns a number
    */
-  get tabId(): string {
-    return `${this.sessionInfo.tab}`;
+  get tabId(): number {
+    return this.sessionInfo.tab;
   }
 
   /**
@@ -59,6 +63,7 @@ export class BrowserTabTracker<T> {
   public initialize(options: {
     sessionIdGenerator: SessionIdGenerator<T>;
     sessionStartedCallback?: SessionStartedCallback<T>;
+    newTabOpenedCallback?: NewTabOpenedCallback<T>;
     storageKey?: string;
   }): void {
     if (!this.sessionInfo) {
@@ -66,6 +71,7 @@ export class BrowserTabTracker<T> {
       this.validateSessionIdGenerator(options.sessionIdGenerator);
       this.sessionIdGenerator = options.sessionIdGenerator;
       this.sessionStartedCallback = options.sessionStartedCallback;
+      this.newTabOpenedCallback = options.newTabOpenedCallback;
       if (options.storageKey) {
         this.validateKey(options.storageKey);
         this.storageKeyName = options.storageKey;
@@ -102,6 +108,9 @@ export class BrowserTabTracker<T> {
       sessionInfo = this.startNewSession();
     }
     sessionInfo.tab = sessionInfo.tab + 1; // increase count
+    if (this.newTabOpenedCallback) {
+      this.newTabOpenedCallback(sessionInfo.tab);
+    }
 
     // save cookie, to be shared amongst other tabs in the same session
     this.storageService.sessionCookieSet(this.storageKeyName, sessionInfo);
