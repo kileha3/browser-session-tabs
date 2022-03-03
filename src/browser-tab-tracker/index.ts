@@ -85,6 +85,7 @@ export class BrowserTabTracker<T> {
         this.sessionStartedCallback(this.sessionId, this.tabId);
       }
     }
+    this.listenOnTabCloseEvent();
   }
 
   private generateSessionInfo(): SessionInfo<T> {
@@ -99,6 +100,17 @@ export class BrowserTabTracker<T> {
     }
 
     return sessionInfo;
+  }
+
+  private listenOnTabCloseEvent(): void {
+    window.onbeforeunload = () => {
+      let sessionInfo = this.storageService.sessionStorageGet<SessionInfo<T>>(this.storageKeyName) as SessionInfo<T>;
+      sessionInfo.tab = sessionInfo.tab - 1;
+      // save cookie, to be shared amongst other tabs in the same session
+      this.storageService.sessionCookieSet(this.storageKeyName, sessionInfo);
+      // save in session storage, just so it can be accessed within this tab
+      this.storageService.sessionStorageSet(this.storageKeyName, sessionInfo);
+    };
   }
 
   private generateNewTabId(): SessionInfo<T> {
